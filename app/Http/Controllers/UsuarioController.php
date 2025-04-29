@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+
 
 class UsuarioController extends Controller
 {
@@ -12,13 +14,14 @@ class UsuarioController extends Controller
         return Usuario::with('rol')->get();
     }
 
-        public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
-            'nombre_usuario' => 'required',
+            'nombre_usuario' => 'required|string',
             'correo' => 'required|email|unique:usuarios,correo',
-            'contraseña' => 'required|min:8',
-            'id_rol' => 'required|exists:roles,id_rol'
+            'contraseña' => 'required|string',
+            'contacto' => 'required|string',
+            'id_rol' => 'required|exists:rols,id_rol'
         ]);
 
         $usuario = Usuario::create([
@@ -26,11 +29,15 @@ class UsuarioController extends Controller
             'correo' => $request->correo,
             'contraseña' => bcrypt($request->contraseña),
             'contacto' => $request->contacto,
-            'id_rol' => $request->id_rol,
+            'id_rol' => $request->id_rol
         ]);
 
-        return response()->json($usuario, 201);
+        return response()->json([
+            'mensaje' => 'Usuario creado correctamente',
+            'usuario' => $usuario
+        ], 201);
     }
+
     public function show($id)
     {
         return Usuario::with('rol')->find($id);
@@ -39,8 +46,26 @@ class UsuarioController extends Controller
     public function update(Request $request, $id)
     {
         $usuario = Usuario::findOrFail($id);
-        $usuario->update($request->all());
-        return $usuario;
+
+        if ($request->has('nombre_usuario')) {
+            $usuario->nombre_usuario = $request->nombre_usuario;
+        }
+        if ($request->has('correo')) {
+            $usuario->correo = $request->correo;
+        }
+        if ($request->has('contraseña')) {
+            $usuario->contraseña = Hash::make($request->contraseña);
+        }
+        if ($request->has('contacto')) {
+            $usuario->contacto = $request->contacto;
+        }
+        if ($request->has('id_rol')) {
+            $usuario->id_rol = $request->id_rol;
+        }
+
+        $usuario->save();
+
+        return response()->json(['mensaje' => 'Usuario actualizado correctamente', 'usuario' => $usuario]);
     }
 
     public function destroy($id)
