@@ -1,4 +1,3 @@
-# Imagen base con PHP y Apache
 FROM php:8.2-apache
 
 # Instalar dependencias del sistema
@@ -15,11 +14,14 @@ COPY . /var/www/html
 # Establecer directorio de trabajo
 WORKDIR /var/www/html
 
-# Instalar dependencias de Laravel
-RUN composer install --no-dev --optimize-autoloader
+# Cambiar el DocumentRoot a public/
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
-# Permitir URLs limpias
+# Habilitar URLs limpias
 RUN a2enmod rewrite
 
 # Dar permisos a storage y bootstrap
 RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Instalar dependencias PHP de Laravel
+RUN composer install --no-dev --optimize-autoloader
