@@ -58,6 +58,22 @@ class PropiedadController extends Controller
         return response()->json($propiedad);
     }
 
+    public function obtenerPorTipo($nombre_tipo)
+    {
+        $propiedades = Propiedad::with(['imagenes', 'usuario', 'ubicacion', 'tipo'])
+            ->whereHas('tipo', function ($query) use ($nombre_tipo) {
+                $query->where('nombre', $nombre_tipo);
+            })
+            ->where('estado', 1)
+            ->get();
+
+        if ($propiedades->isEmpty()) {
+            return response()->json(['mensaje' => 'No hay propiedades de tipo ' . $nombre_tipo], 404);
+        }
+
+        return response()->json($propiedades);
+    }
+
     public function update(Request $request, $id)
     {
         $validaciones = [];

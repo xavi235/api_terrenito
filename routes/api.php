@@ -19,5 +19,4 @@ Route::resource('propiedades', PropiedadController::class);
 Route::resource('imagenes', ImagenController::class);
 Route::resource('detalle-alquileres', DetalleAlquilerController::class);
 Route::get('/propiedades/{id}', [PropiedadController::class, 'mostrar']);
-
-
+Route::get('propiedades/tipo/{nombre_tipo}', [PropiedadController::class, 'obtenerPorTipo']);
