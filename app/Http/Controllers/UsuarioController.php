@@ -16,32 +16,56 @@ class UsuarioController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nombre_usuario' => 'required|string',
-            'correo' => 'required|email|unique:usuarios,correo',
-            'contraseña' => 'required|string',
-            'contacto' => 'required|string',
-            'id_rol' => 'required|exists:rols,id_rol'
-        ]);
+        if (is_array($request->all())) {
+            $usuarios = [];
 
-        $usuario = Usuario::create([
-            'nombre_usuario' => $request->nombre_usuario,
-            'correo' => $request->correo,
-            'contraseña' => bcrypt($request->contraseña),
-            'contacto' => $request->contacto,
-            'id_rol' => $request->id_rol
-        ]);
+            foreach ($request->all() as $usuarioData) {
+                $usuarioData['contraseña'] = bcrypt($usuarioData['contraseña']);
+                $usuarios[] = Usuario::create($usuarioData);
+            }
 
-        return response()->json([
-            'mensaje' => 'Usuario creado correctamente',
-            'usuario' => $usuario
-        ], 201);
+            return response()->json([
+                'mensaje' => 'Usuarios creados correctamente',
+                'usuarios' => $usuarios
+            ], 201);
+        } else {
+            $request->validate([
+                'nombre_usuario' => 'required|string',
+                'correo' => 'required|email|unique:usuarios,correo',
+                'contraseña' => 'required|string',
+                'contacto' => 'required|string',
+                'id_rol' => 'required|exists:rols,id_rol'
+            ]);
+
+            $usuario = Usuario::create([
+                'nombre_usuario' => $request->nombre_usuario,
+                'correo' => $request->correo,
+                'contraseña' => bcrypt($request->contraseña),
+                'contacto' => $request->contacto,
+                'id_rol' => $request->id_rol
+            ]);
+
+            return response()->json([
+                'mensaje' => 'Usuario creado correctamente',
+                'usuario' => $usuario
+            ], 201);
+        }
     }
+
 
     public function show($id)
     {
-        return Usuario::with('rol')->find($id);
+        $usuario = Usuario::with('rol')->find($id);
+
+        if (!$usuario) {
+            return response()->json([
+                'mensaje' => 'El usuario no existe'
+            ], 404);
+        }
+
+        return response()->json($usuario, 200);
     }
+
 
     public function update(Request $request, $id)
     {
