@@ -39,9 +39,9 @@ class PropiedadController extends Controller
 
         foreach ($request->file('imagenes') as $imagen) {
             $ruta = $imagen->store('imagenes', 'public');
-            $url_completa = url('imagenes/' . basename($ruta));
+            $url_completa = 'https://api-terrenito.onrender.com/imagenes/' . basename($ruta);
             $propiedad->imagenes()->create([
-                'ruta_imagen' => $url_completa 
+                'ruta_imagen' => $url_completa
             ]);
         }
 
@@ -105,7 +105,7 @@ class PropiedadController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 $ruta = $imagen->store('imagenes', 'public');
-                $url_completa = url('imagenes/' . basename($ruta));
+                $url_completa = 'https://api-terrenito.onrender.com/imagenes/' . basename($ruta);
                 $propiedad->imagenes()->create([
                     'ruta_imagen' => $url_completa
                 ]);
@@ -144,9 +144,6 @@ class PropiedadController extends Controller
         return response()->json(['mensaje' => 'Propiedad desactivada correctamente']);
     }
 
-    /**
-     * Agrega el campo 'url' a cada imagen con la ruta pública.
-     */
     private function agregarUrlsImagenes($propiedades)
     {
         foreach ($propiedades as $propiedad) {
