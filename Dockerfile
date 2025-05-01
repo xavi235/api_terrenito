@@ -23,5 +23,17 @@ RUN a2enmod rewrite
 # Dar permisos a storage y bootstrap
 RUN chown -R www-data:www-data storage bootstrap/cache
 
+# Cambiar permisos para que Apache pueda acceder a los archivos
+RUN chmod -R 775 storage bootstrap/cache
+
 # Instalar dependencias PHP de Laravel
 RUN composer install --no-dev --optimize-autoloader
+
+# Crear enlace simbólico de storage
+RUN php artisan storage:link
+
+# Exponer el puerto 80
+EXPOSE 80
+
+# Iniciar Apache
+CMD ["apache2-foreground"]
