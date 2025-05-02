@@ -2,19 +2,23 @@
 
 return [
 
-    'paths' => ['api/*', 'storage/*'], // Esto permite el acceso a los endpoints API y almacenamiento
-    
-    'allowed_methods' => ['*'], // Permite todos los métodos HTTP (GET, POST, etc.)
-    
-    'allowed_origins' => ['http://localhost:37499'], // Permite solicitudes solo desde http://localhost:37499
-    
-    'allowed_origins_patterns' => [],
-    
-    'allowed_headers' => ['*'], // Permite todos los encabezados
-    
+    'paths' => ['api/*', 'storage/*'], // Acceso a endpoints API y almacenamiento
+
+    'allowed_methods' => ['*'], // Permitir todos los métodos (GET, POST, etc.)
+
+    'allowed_origins' => [
+        'https://api-terrenito.onrender.com', // Producción (ajusta si tu frontend tiene otro dominio)
+    ],
+
+    'allowed_origins_patterns' => [
+        '^http:\/\/localhost:\d+$', // Cualquier puerto en localhost (útil para desarrollo Flutter o web local)
+    ],
+
+    'allowed_headers' => ['*'], // Permitir todos los headers
+
     'exposed_headers' => [],
-    
+
     'max_age' => 0,
-    
-    'supports_credentials' => false,
+
+    'supports_credentials' => false, // Cambia a true si usas cookies/autenticación basada en sesión
 ];
