@@ -10,13 +10,9 @@ class PropiedadController extends Controller
 {
     public function index()
     {
-        $propiedades = Propiedad::with(['imagenes', 'usuario', 'ubicacion', 'tipo'])
+        return Propiedad::with(['imagenes', 'usuario', 'ubicacion', 'tipo'])
             ->where('estado', 1)
             ->get();
-
-        $this->agregarUrlsImagenes($propiedades);
-
-        return response()->json($propiedades);
     }
 
     public function store(Request $request)
@@ -35,19 +31,19 @@ class PropiedadController extends Controller
             'imagenes.*' => 'required|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
+        // Crear propiedad sin las imágenes
         $propiedad = Propiedad::create($request->except('imagenes'));
 
+        // Guardar imágenes en storage/app/public/imagenes
         foreach ($request->file('imagenes') as $imagen) {
-            $ruta = $imagen->store('imagenes', 'public');
-            $url_completa = 'https://api-terrenito.onrender.com/imagenes/' . basename($ruta);
+            $ruta = $imagen->store('imagenes', 'public'); // devuelve "imagenes/archivo.jpg"
             $propiedad->imagenes()->create([
-                'ruta_imagen' => $url_completa
+                'ruta_imagen' => $ruta
             ]);
         }
 
+        // Cargar relaciones
         $propiedad->load('imagenes', 'usuario', 'ubicacion', 'tipo');
-
-        $this->agregarUrlsImagenes([$propiedad]);
 
         return response()->json([
             'mensaje' => 'Propiedad creada correctamente',
@@ -62,8 +58,6 @@ class PropiedadController extends Controller
         if (!$propiedad) {
             return response()->json(['error' => 'Propiedad no encontrada'], 404);
         }
-
-        $this->agregarUrlsImagenes([$propiedad]);
 
         return response()->json($propiedad);
     }
@@ -81,8 +75,6 @@ class PropiedadController extends Controller
             return response()->json(['mensaje' => 'No hay propiedades de tipo ' . $nombre_tipo], 404);
         }
 
-        $this->agregarUrlsImagenes($propiedades);
-
         return response()->json($propiedades);
     }
 
@@ -90,12 +82,29 @@ class PropiedadController extends Controller
     {
         $validaciones = [];
 
-        if ($request->has('titulo')) $validaciones['titulo'] = 'required';
-        if ($request->has('descripcion')) $validaciones['descripcion'] = 'required';
-        if ($request->has('tamano')) $validaciones['tamano'] = 'nullable|numeric';
-        if ($request->has('precio_min')) $validaciones['precio_min'] = 'required|numeric';
-        if ($request->has('precio_max')) $validaciones['precio_max'] = 'required|numeric';
-        if ($request->has('zona')) $validaciones['zona'] = 'required';
+        if ($request->has('titulo')) {
+            $validaciones['titulo'] = 'required';
+        }
+
+        if ($request->has('descripcion')) {
+            $validaciones['descripcion'] = 'required';
+        }
+
+        if ($request->has('tamano')) {
+            $validaciones['tamano'] = 'nullable|numeric';
+        }
+
+        if ($request->has('precio_min')) {
+            $validaciones['precio_min'] = 'required|numeric';
+        }
+
+        if ($request->has('precio_max')) {
+            $validaciones['precio_max'] = 'required|numeric';
+        }
+
+        if ($request->has('zona')) {
+            $validaciones['zona'] = 'required';
+        }
 
         $request->validate($validaciones);
 
@@ -105,16 +114,13 @@ class PropiedadController extends Controller
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $imagen) {
                 $ruta = $imagen->store('imagenes', 'public');
-                $url_completa = 'https://api-terrenito.onrender.com/imagenes/' . basename($ruta);
                 $propiedad->imagenes()->create([
-                    'ruta_imagen' => $url_completa
+                    'ruta_imagen' => $ruta
                 ]);
             }
         }
 
         $propiedad->load('imagenes', 'usuario', 'ubicacion', 'tipo');
-
-        $this->agregarUrlsImagenes([$propiedad]);
 
         return response()->json([
             'mensaje' => 'Propiedad actualizada correctamente',
@@ -130,8 +136,6 @@ class PropiedadController extends Controller
             return response()->json(['mensaje' => 'Propiedad no encontrada.'], 404);
         }
 
-        $this->agregarUrlsImagenes([$propiedad]);
-
         return response()->json($propiedad);
     }
 
@@ -142,14 +146,5 @@ class PropiedadController extends Controller
         $propiedad->save();
 
         return response()->json(['mensaje' => 'Propiedad desactivada correctamente']);
-    }
-
-    private function agregarUrlsImagenes($propiedades)
-    {
-        foreach ($propiedades as $propiedad) {
-            foreach ($propiedad->imagenes as $imagen) {
-                $imagen->url = $imagen->ruta_imagen;
-            }
-        }
     }
 }
